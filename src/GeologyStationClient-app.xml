@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<application xmlns="http://ns.adobe.com/air/application/2.6">
+	<id>no.uio.intermedia.GeologyStationClient</id>
+	<filename>GeologyStationClient</filename>
+	<name>GeologyStationClient</name>
+	<versionNumber>0.0.4</versionNumber>
+	<initialWindow>
+		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
+		<systemChrome>standard</systemChrome>
+		<transparent>false</transparent>
+		<minimizable>true</minimizable>
+		<maximizable>true</maximizable>
+		<resizable>true</resizable>
+		<width>700</width>
+		<height>500</height>
+	</initialWindow>
+	<supportedProfiles>extendedDesktop desktop</supportedProfiles>
+	<icon>
+		<image16x16>assets/icons/16.png</image16x16>
+		<image32x32>assets/icons/32.png</image32x32>
+		<image48x48>assets/icons/48.png</image48x48>
+		<image128x128>assets/icons/128.png</image128x128>
+	</icon>
+</application>

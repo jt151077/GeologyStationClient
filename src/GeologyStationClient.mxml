@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" width="1024" height="800" applicationComplete="windowedapplication1_applicationCompleteHandler(event)" xmlns:local="*">
+	
+	<fx:Script source="GeologyStationClientScript.as" />
+	
+	<fx:Declarations>
+		<s:HTTPService id="fetchConfigs" resultFormat="e4x" fault="fetchConfigs_faultHandler(event)" result="fetchConfigs_resultHandler(event)" />
+		<s:HTTPService id="loadChosenConfig" resultFormat="e4x" fault="loadChosenConfig_faultHandler(event)" result="loadChosenConfig_resultHandler(event)" />
+		<s:Fade id="fadeAway" alphaFrom="1" alphaTo="0" duration="1000" />
+		<s:Fade id="fadeIn" alphaFrom="0" alphaTo="1" duration="1000" />
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="presentation" />
+		<s:State name="configuration" />
+	</s:states>
+	
+	<s:transitions>
+		<s:Transition fromState="presentation">
+			<s:Parallel>
+				
+			</s:Parallel>
+		</s:Transition>
+	</s:transitions>
+	
+	<s:NavigatorContent width="100%" height="100%" backgroundColor="#333333" showEffect="{fadeIn}" hideEffect="{fadeAway}" excludeFrom="configuration"/>
+	<s:NavigatorContent width="100%" height="100%" backgroundColor="#666666" showEffect="{fadeIn}" hideEffect="{fadeAway}" includeIn="configuration">
+		<s:VGroup top="30" bottom="30" left="50" right="50" gap="15">
+			<s:Label color="#FFFFFF" text="URL to GeologyStationConfigurator web server:" />
+			<s:HGroup width="100%" >
+				<s:TextInput id="urlWS" width="400" text="{fetchConfigs.url}" />
+				<s:Button id="reloadConfigButton" label="RELOAD" color="#FFFFFF" enabled="{enableReloadConfigButton}" chromeColor="#333333" click="button1_clickHandler(event)"/>
+			</s:HGroup>  
+			<s:Label color="#FFFFFF" text="Please select which station configuration you want to load:" />
+			<s:List id="stationList" selectedIndex="{stationListSelectedIndex}" change="stationList_changeHandler(event)" width="100%" height="100%" contentBackgroundColor="#666666" borderColor="#999999" dataProvider="{availableStations}" itemRenderer="renderers.selectionListItemRenderer">
+				<s:layout>
+					<s:TileLayout requestedColumnCount="3" columnAlign="justifyUsingWidth" horizontalGap="20" verticalGap="20" />
+				</s:layout>
+			</s:List>
+			<s:HGroup width="100%" gap="20" horizontalAlign="center">
+				<s:Button id="okChangeConfigButton" enabled="false" label="OK" color="#FFFFFF" chromeColor="#333333" click="button2_clickHandler(event)"/>
+				<s:Button label="CANCEL" color="#FFFFFF" chromeColor="#333333" click="currentState='presentation'" />
+			</s:HGroup>
+		</s:VGroup>
+	</s:NavigatorContent>
+
+	<local:introWaiter id="iWaiter" width="100%" height="100%" hideEffect="{fadeAway}" effectEnd="{iWaiter.spinner.gotoAndStop(0)}"/>
+	<s:Group right="0" top="0" click="group1_clickHandler(event)">
+		<s:Rect width="100" height="100">
+			<s:fill>
+				<s:SolidColor color="#FFFFFF" alpha=".01" />
+			</s:fill>
+		</s:Rect>
+	</s:Group>
+	<s:Label color="#FFFFFF" bottom="0" right="0" id="connectStatus" />
+</s:WindowedApplication>
+

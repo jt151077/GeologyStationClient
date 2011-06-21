@@ -22,7 +22,6 @@ package
 		public function isInitialized():Boolean {
 			var pweb:String = so.data.pathtoserver;
 			var selstation:String = so.data.selstation;
-			var xmlstation:String = so.data.xmlstation;
 			
 			if(pweb == null) {
 				so.data.pathtoserver = PATH_TO_WEB_SERVER;
@@ -30,10 +29,6 @@ package
 			
 			if(selstation == null) {
 				so.data.selstation = DEFAULT_SELECTION;
-			}
-			
-			if(xmlstation == null) {
-				so.data.xmlstation = <station />;
 			}
 			
 			if(so.flush() == SharedObjectFlushStatus.FLUSHED) {
@@ -44,13 +39,18 @@ package
 			}
 		}
 		
-		public function getPathToWebServer():String {
+		public function getPathToWebServerStations():String {
 			return new String(so.data.pathtoserver);
 		}
 
 		public function getSelectedStation():Object {
 			var ob:Object = (so.data.selstation);
 			return ob;
+		}
+		
+		public function getStationFilename():String {
+			var ob:Object = (so.data.selstation);
+			return ob.filename;
 		}
 		
 		public function updatePaths(webpath:String):Boolean {
@@ -66,9 +66,8 @@ package
 		
 		public function updateSelectedStation(ob:Object):Boolean {
 			so.data.selstation = ob;
-			
+				
 			if(so.flush() == SharedObjectFlushStatus.FLUSHED) {
-				updateXMLStation(ob.filename);
 				return true;
 			}
 			else {
@@ -76,16 +75,19 @@ package
 			}
 		}
 		
-		private function updateXMLStation(nam:String):void {
-			trace("OK: "+nam);
-			var xmlService:HTTPService = new HTTPService();
-			xmlService.url = "http://10.0.2.1/"+nam;
-			xmlService.addEventListener(ResultEvent.RESULT, onXMLResult);
-			xmlService.send();
+		public function writeConfigToLocal(xml:XML):Boolean {
+			so.data.xmlselected = xml;
+			
+			if(so.flush() == SharedObjectFlushStatus.FLUSHED) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		
-		private function onXMLResult(evt:ResultEvent):void {
-			trace(evt.result);
+		public function getLocalConfig():XML {
+			return so.data.xmlselected;
 		}
 	}
 }

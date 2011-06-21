@@ -35,8 +35,9 @@ private var monitor:URLMonitor;
 private var appUpdater:ApplicationUpdaterUI;
 
 protected function windowedapplication1_applicationCompleteHandler(event:FlexEvent):void {
-	systemManager.stage.displayState=flash.display.StageDisplayState.FULL_SCREEN;
+	//systemManager.stage.displayState=flash.display.StageDisplayState.FULL_SCREEN;
 	
+	//building some application menus
 	if(NativeWindow.supportsMenu) {
 		stage.nativeWindow.menu = createRootMenu();
 	}
@@ -44,18 +45,29 @@ protected function windowedapplication1_applicationCompleteHandler(event:FlexEve
 		NativeApplication.nativeApplication.menu = createRootMenu();
 	}
 	
+	//fetch application version from XML description file and set it in the application footer
 	var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
 	var ns:Namespace = appXml.namespace(); 
 	FlexGlobals.topLevelApplication.status = "Intermedia (UiO) 2011 - Version "+(appXml.ns::versionNumber).toString();
 	
-	monitor = new URLMonitor(new URLRequest("http://10.0.2.1/allstations.xml"));
-	monitor.addEventListener(StatusEvent.STATUS, handleMonitorStatus);
-	monitor.start();
+	//instantiate the path manager
+	pathManager = new PathManager();
+	if(pathManager.isInitialized()) {
+		//check if we have a connection to the server
+		monitor = new URLMonitor(new URLRequest(pathManager.getPathToWebServerStations()));
+		//monitor = new URLMonitor(new URLRequest("http://xxx"));
+		monitor.addEventListener(StatusEvent.STATUS, handleMonitorStatus);
+		monitor.start();
+	}
+	else {
+		//something weird happened with the pathManager class, maybe let the user know
+	}
 }
 
 private function handleMonitorStatus(evt:StatusEvent):void {
 	if(monitor.available) {
-		//we're connected
+		//we're connected to the server
+		//check if there's an update available
 		connectStatus.text = "online";
 		appUpdater = new ApplicationUpdaterUI();
 		appUpdater.delay = 1;
@@ -72,39 +84,30 @@ private function handleMonitorStatus(evt:StatusEvent):void {
 		//we're offline
 		connectStatus.text = "offline";
 		enableReloadConfigButton = false;
-		loadLocalConfig();
+		parseLocalConfiguration();
 	}
-}
-
-private function loadLocalConfig():void {
-	
-	monitor.stop();
-	monitor.removeEventListener(StatusEvent.STATUS, handleMonitorStatus);
-	
-	iWaiter.visible = false;
 }
 
 private function initAppUdpateFinished(evt:UpdateEvent):void {
 	appUpdater.checkNow();
 	
-	pathManager = new PathManager();
-	
-	if(pathManager.isInitialized()) {
-		fetchConfigs.url = pathManager.getPathToWebServer();
-		fetchConfigs.send();
-	}
+	//let's retrieve all available stations from the server
+	fetchConfigs.url = pathManager.getPathToWebServerStations();
+	fetchConfigs.send();
 }
 
 private function onAppUpdateError(event:ErrorEvent):void {
 	Alert.show(event.toString());
 }
 
+//create root menu
 private function createRootMenu():NativeMenu {
 	var menu:NativeMenu = new NativeMenu();
 	menu.addItem(fileMenu());
 	return menu;
 }
 
+//create sub menus + menu selection listeners
 private function fileMenu():NativeMenuItem {
 	var fileMenu:NativeMenuItem = new NativeMenuItem ("File");
 	fileMenu.submenu = new NativeMenu();
@@ -127,74 +130,111 @@ private function fileMenu():NativeMenuItem {
 	return fileMenu;
 }
 
+//menu selection handler
 private function onSelectItem(e:Event):void {
 	var item:NativeMenuItem = e.target as NativeMenuItem
 		
 	switch(item.label) {
-		case "Configure...":
-			retrieveLastChosenStation();
-			
-			this.currentState = "configuration";
-			break;
 		case "Preferences...":
+			//we need to display or update the display here
 //						vidPath.text = pathManager.getPathToVids();
 //						filePath.text = pathManager.getPathToWebServer();
 //						configPanel.visible = true;
 			break;
+		case "Configure...":
+			//look for a previously selected station
+			retrieveLastChosenStation();
+			this.currentState = "configuration";
+			break;
 		case "Exit":
+			//bye-bye
 			FlexGlobals.topLevelApplication.close();
 			break;
 	}			
 }
 
+//try to check if the station name saved locally can be found in the loaded allstations array.
 private function retrieveLastChosenStation():void {
 	var prevSelectedObject:Object;
 	
 	prevSelectedObject = pathManager.getSelectedStation();
 	
-	for (var j:int = 0; j < availableStations.length; j++) {
-		if((availableStations[j]).name == prevSelectedObject.name) {
-			stationListSelectedIndex = j;
+	if(availableStations != null && availableStations.length > 0) {
+		for (var j:int = 0; j < availableStations.length; j++) {
+			if((availableStations[j]).name == prevSelectedObject.name) {
+				stationListSelectedIndex = j;
+			}
 		}
 	}
 }
 
+//something wrong happened when retrieving the allstations URL. If available, automatically revert and reload previous path
 protected function fetchConfigs_faultHandler(event:FaultEvent):void {
 	iWaiter.visible = false;
 	
 	Alert.show("Error while retrieving the configurations", "FetchConfigs service error");
 	
-	if(pathManager.getPathToWebServer() != fetchConfigs.url) {
-		fetchConfigs.url = pathManager.getPathToWebServer();
+	if(pathManager.getPathToWebServerStations() != fetchConfigs.url) {
+		fetchConfigs.url = pathManager.getPathToWebServerStations();
 		fetchConfigs.send();
 	}
 }
 
+//allstations URL handler
 protected function fetchConfigs_resultHandler(event:ResultEvent):void {
-	if(pathManager.getPathToWebServer() != fetchConfigs.url) {
+	//that worked, let's save it
+	if(pathManager.getPathToWebServerStations() != fetchConfigs.url) {
 		pathManager.updatePaths(fetchConfigs.url);
 	}
 	
+	//iterate through the stations in that file
 	var xml:XML = event.result as XML;
 	availableStations = new ArrayCollection();
 	for each (var object:XML in xml.*) {
 		availableStations.addItem(object);
 	}	
 	
+	//try update with latest from server
+	if(pathManager.getStationFilename() != null) {
+		//we try to update the config
+		trace("let's update: "+pathManager.getStationFilename());
+		loadConfiguration();
+	}
+	else {
+		//no config has been chosen, maybe switch to config panel
+	}
+}
+
+//load config locally, either after an update or directly because offline
+private function parseLocalConfiguration():void {
 	monitor.stop();
 	monitor.removeEventListener(StatusEvent.STATUS, handleMonitorStatus);
 	iWaiter.visible = false;
+	
+	//retieve local XML
+	if(pathManager.getLocalConfig() != null) {
+		//we have a local config available
+		var xml:XML = pathManager.getLocalConfig();
+		trace(xml);
+	}
+	else {
+		//not local config available and no connection, we can't do anything
+	}
 }
 
+//reloading the allstations
 protected function button1_clickHandler(event:MouseEvent):void {
 	fetchConfigs.url = urlWS.text;
 	fetchConfigs.send();
 }
 
+//validating station selection
 protected function button2_clickHandler(event:MouseEvent):void {
 	if(stationList.selectedIndex > -1) {
 		if(pathManager.updateSelectedStation(stationList.selectedItem)) {
 			Alert.show("Station changed successfully", "Change station");
+			//reloading stationconfiguration
+			loadConfiguration();
 		}
 		else {
 			Alert.show("A problem occurred when saving the station", "Change station");
@@ -204,6 +244,13 @@ protected function button2_clickHandler(event:MouseEvent):void {
 	}
 }
 
+//re-/load configuration from server 
+private function loadConfiguration():void {
+	loadChosenConfig.url = "http://10.0.2.1/"+pathManager.getStationFilename();
+	loadChosenConfig.send();
+}
+
+//button status handler if selection is made
 protected function stationList_changeHandler(event:IndexChangeEvent):void {
 	if(stationList.selectedIndex > -1) {
 		okChangeConfigButton.enabled = true;
@@ -213,14 +260,23 @@ protected function stationList_changeHandler(event:IndexChangeEvent):void {
 	}
 }
 
+//result handler for loading a station configuration
 protected function loadChosenConfig_resultHandler(event:ResultEvent):void {
 	var xml:XML = event.result as XML;
+	
+	//write the xml first locally
+	if(pathManager.writeConfigToLocal(xml)) {
+		//if successful parse it
+		parseLocalConfiguration();
+	}
 }
 
+//error handler for station configuration loader
 protected function loadChosenConfig_faultHandler(event:FaultEvent):void {
 	Alert.show("Error while loading your chosen configuration", "Load configuration service error");
 }
 
+//display state handler
 protected function group1_clickHandler(event:MouseEvent):void {
 	if(systemManager.stage.displayState == flash.display.StageDisplayState.FULL_SCREEN) {
 		nativeWindow.maximize();

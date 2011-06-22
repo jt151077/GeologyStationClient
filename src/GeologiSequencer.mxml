@@ -10,11 +10,23 @@
 			import com.phidgets.events.PhidgetErrorEvent;
 			import com.phidgets.events.PhidgetEvent;
 			
-			[Bindable] public var _sequenceArray:Array;
+			import mx.collections.ArrayCollection;
+			import mx.utils.ObjectUtil;
 			
-			private var rfid:PhidgetRFID;
+			import org.osmf.events.TimeEvent;
 			
-			public function initSequencer():void {
+			private var _sequenceArray:ArrayCollection
+			private var localRFIDArray:ArrayCollection;
+			private var firstDetection:Boolean;
+			private var scanAllowed:Boolean;
+			
+			public var rfid:PhidgetRFID;
+			private var nextItem:Item;
+			
+			public function initSequencer(sequenceArray:ArrayCollection):void {
+				this._sequenceArray = sequenceArray;
+				initDataSource();
+				
 				//let's do the Phidget business here
 				rfid = new PhidgetRFID();
 				rfid.addEventListener(PhidgetEvent.DETACH,	onDetach);
@@ -23,7 +35,19 @@
 				rfid.addEventListener(PhidgetDataEvent.TAG, onTag);
 				rfid.open("localhost", 5001);
 				
+			}
+			
+			private function initDataSource():void {
+				firstDetection = true;
+				scanAllowed = true;
+				//we make a copy of the rfid array as we will pop items
+				localRFIDArray = new ArrayCollection();
+				for each (var it:Item in this._sequenceArray) {
+					localRFIDArray.addItem(it);
+				}
+				
 				waiterMov.visible = true;
+				//localRFIDArray = ObjectUtil.copy(_sequenceArray) as ArrayCollection;
 			}
 			
 			private function onError(evt:PhidgetErrorEvent):void {
@@ -41,13 +65,103 @@
 			private function onTag(evt:PhidgetDataEvent):void{
 				trace("onTag: "+evt);
 				waiterMov.visible = false;
+				
+				if(scanAllowed) {
+					//we pause scanning while we deal with the tag read
+					scanAllowed = false;
+					if(firstDetection) {
+						firstDetection = false;
+						nextItem = getNextItem(new String(evt.Data));
+						vidPlayer.source = "assets/vids/"+nextItem.videoName;
+						vidPlayer.visible = true;
+					}
+					else {
+						//we are in answer question mode
+						sequencequestion.visible = false;
+						//check RFID tag is part of the nextitem
+						if(nextItem.rfids.indexOf(new String(evt.Data)) > -1) {
+							//got it, well done you answered the question properly, you can view the video
+							trace("What a champ!!");
+							vidPlayer.source = "assets/vids/"+nextItem.videoName;
+							vidPlayer.visible = true;
+						}
+						else {
+							//too bad, wrong answer, do you want to see the question again???
+							trace("Ain't good enough, try again");
+							//here you define the question transition + question object
+							sequencequestion.question = nextItem.question + "\n\nWRONG!!!! Try something else !!!";
+							sequencequestion.visible = true;
+							
+							//we wait for an answer
+							scanAllowed = true;
+						}
+					}
+				}
+			}
+			
+			private function getNextItem(name:String = null):Item {
+				var itemToReturn:Item = null;
+				
+				if(localRFIDArray.length > 0) {
+					//we look for the item which has the parameter RFID tag
+					for (var i:int = 0; i < localRFIDArray.length; i++)  {
+						if((localRFIDArray[i] as Item).rfids.indexOf(name) > -1) {
+							//it has it
+							itemToReturn = localRFIDArray[i] as Item;
+							localRFIDArray.removeItemAt(i);
+						}
+					}
+					
+					//if no item was found or parameter name is null, we need to return the first in the array and pop it
+					if(itemToReturn == null) {
+						itemToReturn = localRFIDArray[0] as Item;
+						localRFIDArray.removeItemAt(0);
+					}
+					
+					return itemToReturn;
+				}
+				else {
+					return null;
+				}
 			}
 			
 			private function onTagLoss(evt:PhidgetDataEvent):void {
 				trace("onTagLoss: "+evt);
 			}
+			
+			protected function vidPlayer_completeHandler(event:TimeEvent):void {
+				//let's hide the player
+				vidPlayer.visible = false;
+				if(localRFIDArray.length > 0) {
+					//still some videos, let's pop a question
+					nextItem = getNextItem();
+					
+					//here you define the question transition + question object
+					sequencequestion.question = nextItem.question;
+					sequencequestion.visible = true;
+					
+					//we wait for an answer
+					scanAllowed = true;
+				}
+				else {
+					//show congratulations screen
+					trace("You've looped through everything, try a different station!");
+					//after a while let's get back to the beginning
+					initDataSource();
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	
+	<!-- this is the main display window -->
+	<s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" />
+	<!-- You can use this player for development/debugging purposes as it allows to skip to the end
+	<s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/>  -->
+	
+	<local:SequenceQuestion visible="false" width="100%" height="100%" id="sequencequestion" />
+	
+	<!-- these are additional UI components such as the waiter, the transition, etc -->
 	<local:Waiter id="waiterMov" width="200" height="200" horizontalCenter="0" verticalCenter="0" visible="false" />
+	
 </s:NavigatorContent>

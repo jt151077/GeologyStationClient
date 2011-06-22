@@ -35,7 +35,7 @@ private var monitor:URLMonitor;
 private var appUpdater:ApplicationUpdaterUI;
 
 protected function windowedapplication1_applicationCompleteHandler(event:FlexEvent):void {
-	//systemManager.stage.displayState=flash.display.StageDisplayState.FULL_SCREEN;
+	systemManager.stage.displayState=flash.display.StageDisplayState.FULL_SCREEN;
 	
 	//building some application menus
 	if(NativeWindow.supportsMenu) {
@@ -117,11 +117,6 @@ private function fileMenu():NativeMenuItem {
 	confItem.keyEquivalent = "t";
 	fileMenu.submenu.addItem(confItem);
 	
-	var prefsItem:NativeMenuItem = new NativeMenuItem ("Preferences...");
-	prefsItem.addEventListener(Event.SELECT, onSelectItem);
-	prefsItem.keyEquivalent = "p";
-	fileMenu.submenu.addItem(prefsItem);
-	
 	var exitItem:NativeMenuItem = new NativeMenuItem ("Exit");
 	exitItem.addEventListener(Event.SELECT, onSelectItem);
 	exitItem.keyEquivalent = "q";
@@ -143,6 +138,7 @@ private function onSelectItem(e:Event):void {
 			break;
 		case "Configure...":
 			//look for a previously selected station
+			geologisequencer.vidPlayer.source = null;
 			retrieveLastChosenStation();
 			this.currentState = "configuration";
 			break;
@@ -217,14 +213,13 @@ private function parseLocalConfiguration():void {
 		var xml:XML = pathManager.getLocalConfig();
 		
 		var item:Item;
-		var sequenceArray:Array = new Array();
+		var sequenceArray:ArrayCollection = new ArrayCollection();
 		for each (var object:XML in xml.sequence.*) {
 			item = new Item(object);
-			sequenceArray.push(item);
+			sequenceArray.addItem(item);
 		}
 		
-		geologisequencer._sequenceArray = sequenceArray;
-		geologisequencer.initSequencer();
+		geologisequencer.initSequencer(sequenceArray);
 	}
 	else {
 		//not local config available and no connection, we can't do anything
@@ -252,6 +247,17 @@ protected function button2_clickHandler(event:MouseEvent):void {
 		this.currentState = "presentation";
 	}
 }
+
+protected function button3_clickHandler(event:MouseEvent):void {
+	loadConfiguration();
+	this.currentState = "presentation";
+}
+
+
+protected function windowedapplication1_closingHandler(event:Event):void {
+	geologisequencer.rfid.close();
+}
+
 
 //re-/load configuration from server 
 private function loadConfiguration():void {

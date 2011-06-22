@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			[Bindable] public var question:String;
+		]]>
+	</fx:Script>
+	
+	<s:Panel width="400" height="300" title="Question ..." horizontalCenter="0" verticalCenter="0">
+		<s:Label horizontalCenter="0" verticalCenter="0" textAlign="center" text="{question}" fontSize="15" />
+	</s:Panel>
+</s:Group>

@@ -8,6 +8,7 @@
 		]]>
 	</fx:Script>
 	
+	<!-- for now display just a simple panel, but more advanced graphical object can be inserted here -->
 	<s:Panel width="400" height="300" title="Question ..." horizontalCenter="0" verticalCenter="0">
 		<s:Label horizontalCenter="0" verticalCenter="0" textAlign="center" text="{question}" fontSize="15" />
 	</s:Panel>

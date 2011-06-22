@@ -261,7 +261,8 @@ protected function windowedapplication1_closingHandler(event:Event):void {
 
 //re-/load configuration from server 
 private function loadConfiguration():void {
-	loadChosenConfig.url = "http://10.0.2.1/"+pathManager.getStationFilename();
+	loadChosenConfig.url = new String(pathManager.getPathToWebServerStations()).replace("allstations.xml", pathManager.getStationFilename());
+	//loadChosenConfig.url = "http://10.0.2.1/"+pathManager.getStationFilename();
 	loadChosenConfig.send();
 }
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:NavigatorContent xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:local="*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.phidgets.PhidgetRFID;
+			import com.phidgets.events.PhidgetDataEvent;
+			import com.phidgets.events.PhidgetErrorEvent;
+			import com.phidgets.events.PhidgetEvent;
+			
+			[Bindable] public var _sequenceArray:Array;
+			
+			private var rfid:PhidgetRFID;
+			
+			public function initSequencer():void {
+				//let's do the Phidget business here
+				rfid = new PhidgetRFID();
+				rfid.addEventListener(PhidgetEvent.DETACH,	onDetach);
+				rfid.addEventListener(PhidgetEvent.ATTACH,	onAttach);
+				rfid.addEventListener(PhidgetErrorEvent.ERROR, onError);
+				rfid.addEventListener(PhidgetDataEvent.TAG, onTag);
+				rfid.open("localhost", 5001);
+				
+				waiterMov.visible = true;
+			}
+			
+			private function onError(evt:PhidgetErrorEvent):void {
+				trace("onError: "+evt);
+			}
+			
+			private function onAttach(evt:PhidgetEvent):void {
+				trace("onAttach: "+evt);
+			}
+			
+			private function onDetach(evt:PhidgetEvent):void{
+				trace("onDetach: "+evt);
+			}
+			
+			private function onTag(evt:PhidgetDataEvent):void{
+				trace("onTag: "+evt);
+				waiterMov.visible = false;
+			}
+			
+			private function onTagLoss(evt:PhidgetDataEvent):void {
+				trace("onTagLoss: "+evt);
+			}
+		]]>
+	</fx:Script>
+	
+	<local:Waiter id="waiterMov" width="200" height="200" horizontalCenter="0" verticalCenter="0" visible="false" />
+</s:NavigatorContent>

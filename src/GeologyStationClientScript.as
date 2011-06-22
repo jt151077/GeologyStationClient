@@ -54,8 +54,8 @@ protected function windowedapplication1_applicationCompleteHandler(event:FlexEve
 	pathManager = new PathManager();
 	if(pathManager.isInitialized()) {
 		//check if we have a connection to the server
-		monitor = new URLMonitor(new URLRequest(pathManager.getPathToWebServerStations()));
 		//monitor = new URLMonitor(new URLRequest("http://xxx"));
+		monitor = new URLMonitor(new URLRequest(pathManager.getPathToWebServerStations()));
 		monitor.addEventListener(StatusEvent.STATUS, handleMonitorStatus);
 		monitor.start();
 	}
@@ -215,7 +215,16 @@ private function parseLocalConfiguration():void {
 	if(pathManager.getLocalConfig() != null) {
 		//we have a local config available
 		var xml:XML = pathManager.getLocalConfig();
-		trace(xml);
+		
+		var item:Item;
+		var sequenceArray:Array = new Array();
+		for each (var object:XML in xml.sequence.*) {
+			item = new Item(object);
+			sequenceArray.push(item);
+		}
+		
+		geologisequencer._sequenceArray = sequenceArray;
+		geologisequencer.initSequencer();
 	}
 	else {
 		//not local config available and no connection, we can't do anything

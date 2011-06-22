@@ -1,0 +1,22 @@
+<station>
+  <name><![CDATA[Station 1]]></name>
+  <index><![CDATA[1]]></index>
+  <sequence>
+    <object>
+      <name><![CDATA[xmen-first-class-trailer.mp4]]></name>
+      <type><![CDATA[Video (mp4)]]></type>
+      <question><![CDATA[What the name of the last XMen movie???]]></question>
+      <rfid>
+        <tag><![CDATA[0104fb26ff]]></tag>
+      </rfid>
+    </object>
+    <object>
+      <name><![CDATA[transformers-3.mp4]]></name>
+      <type><![CDATA[Video (mp4)]]></type>
+      <question><![CDATA[How many transformers movies have been released to date?]]></question>
+      <rfid>
+        <tag><![CDATA[0103c5a61f]]></tag>
+      </rfid>
+    </object>
+  </sequence>
+</station>

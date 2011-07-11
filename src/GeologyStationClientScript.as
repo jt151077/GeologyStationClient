@@ -2,6 +2,9 @@ import air.net.URLMonitor;
 import air.update.ApplicationUpdaterUI;
 import air.update.events.UpdateEvent;
 
+import com.phidgets.PhidgetRFID;
+import com.phidgets.events.PhidgetDataEvent;
+
 import flash.desktop.NativeApplication;
 import flash.display.NativeMenu;
 import flash.display.NativeMenuItem;

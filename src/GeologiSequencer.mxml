@@ -77,6 +77,7 @@
 					}
 					else {
 						//we are in answer question mode
+						sequencequestion.stopPlayingSound();
 						sequencequestion.visible = false;
 						//check RFID tag is part of the nextitem
 						if(nextItem.rfids.indexOf(new String(evt.Data)) > -1) {
@@ -138,6 +139,8 @@
 					
 					//here you define the question transition + question object
 					sequencequestion.question = nextItem.question;
+					sequencequestion.sound = nextItem.sound;
+					sequencequestion.picture = nextItem.picture;
 					sequencequestion.visible = true;
 					
 					//we wait for an answer
@@ -155,9 +158,9 @@
 	</fx:Script>
 	
 	<!-- this is the main display window -->
-	<s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" />
-	<!-- You can use this player for development/debugging purposes as it allows to skip to the end
-	<s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/>  -->
+	<!-- <s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" /> -->
+	<!-- You can use this player for development/debugging purposes as it allows to skip to the end -->
+	<s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/>
 	
 	<local:SequenceQuestion visible="false" width="100%" height="100%" id="sequencequestion" />
 	

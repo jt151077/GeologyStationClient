@@ -1,38 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
-		 xmlns:mx="library://ns.adobe.com/flex/mx">
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:local="*">
 	<fx:Script>
 		<![CDATA[
+			import mx.core.IVisualElement;
 			import mx.events.FlexEvent;
 			[Bindable] public var question:String;
 			[Bindable] public var picture:String;
 			[Bindable] public var sound:String;
 			
-			private var snd:Sound;
-			private var myChannel:SoundChannel = new SoundChannel();
+			private var loader:Loader;
+			public var quiz:QuizMode = null;
 			
-			protected function image1_clickHandler(event:MouseEvent):void {
-				stopPlayingSound();
-				snd = new Sound();
-				snd.load(new URLRequest("assets/snds/"+sound));
-				myChannel = snd.play();
+//			protected function image1_clickHandler(event:MouseEvent):void {
+//				stopPlayingSound();
+//				snd = new Sound();
+//				snd.load(new URLRequest("assets/snds/"+sound));
+//				myChannel = snd.play();
+//			}
+//			
+//			public function stopPlayingSound():void {
+//				if(snd != null) {
+//					myChannel.stop();
+//				}
+//			}
+			
+			public function initIt():void {
+				if(quiz != null) {
+					container.removeChild(quiz);	
+				}
+				
+				loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, startQ);
+				loader.load(new URLRequest('assets/pics/'+picture));
 			}
 			
-			public function stopPlayingSound():void {
-				if(snd != null) {
-					myChannel.stop();
-				}
+			private function startQ(e:Event):void {
+				var snd:Sound = new Sound();
+				var myChannel:SoundChannel = new SoundChannel();
+				snd.load(new URLRequest("assets/snds/"+sound));
+				
+				var image:Bitmap = Bitmap(e.target.content);
+				quiz = new QuizMode(image, question, myChannel);		
+				container.addChild(quiz);
 			}
 		]]>
 	</fx:Script>
 	
 	<!-- for now display just a simple panel, but more advanced graphical object can be inserted here -->
-	<s:Panel width="{(2*this.width)/3}" height="{(2*this.height)/3}" title="Question ..." horizontalCenter="0" verticalCenter="0">
+	<!-- <s:Panel width="{(2*this.width)/3}" height="{(2*this.height)/3}" title="Question ..." horizontalCenter="0" verticalCenter="0">
 		<s:VGroup left="10" top="10" right="10" bottom="10" gap="10" horizontalAlign="center" verticalAlign="middle">
 			<s:Label width="100%" textAlign="center" text="{question}" fontSize="15" />
 			<s:Image width="100%" height="100%" source="{'assets/pics/'+picture}" />
 			<s:Image source="assets/icons/play.png" width="100" height="100" click="image1_clickHandler(event)" />
 		</s:VGroup>
 	</s:Panel>
+	-->
+	
+	<mx:UIComponent id="container" width="100%" height="100%" />
+	
 </s:Group>

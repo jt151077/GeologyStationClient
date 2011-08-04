@@ -86,7 +86,7 @@ private function handleMonitorStatus(evt:StatusEvent):void {
 	else {
 		//we're offline
 		connectStatus.text = "offline";
-		enableReloadConfigButton = false;
+		//enableReloadConfigButton = false;
 		parseLocalConfiguration();
 	}
 }
@@ -240,6 +240,7 @@ protected function button2_clickHandler(event:MouseEvent):void {
 	if(stationList.selectedIndex > -1) {
 		if(pathManager.updateSelectedStation(stationList.selectedItem)) {
 			Alert.show("Station changed successfully", "Change station");
+			connectStatus.text = "online";
 			//reloading stationconfiguration
 			loadConfiguration();
 		}

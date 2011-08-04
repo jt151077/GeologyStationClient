@@ -23,9 +23,14 @@
 			public var rfid:PhidgetRFID;
 			private var nextItem:Item;
 			
+			private var correctTimer:Timer = new Timer(4000, 1);
+			private var wrongTimer:Timer = new Timer(4000, 1);
+			
 			public function initSequencer(sequenceArray:ArrayCollection):void {
 				this._sequenceArray = sequenceArray;
 				initDataSource();
+				correctTimer.addEventListener(TimerEvent.TIMER_COMPLETE, correctAnswerHandler);
+				wrongTimer.addEventListener(TimerEvent.TIMER_COMPLETE, wrongAnswerHandler);
 				
 				//let's do the Phidget business here
 				rfid = new PhidgetRFID();
@@ -52,14 +57,20 @@
 			
 			private function onError(evt:PhidgetErrorEvent):void {
 				trace("onError: "+evt);
+				rfidStatus.text = "RFID Card: error";
+				rfidStatus.setStyle("color", 0xFF0000);
 			}
 			
 			private function onAttach(evt:PhidgetEvent):void {
 				trace("onAttach: "+evt);
+				rfidStatus.text = "RFID Card: connected";
+				rfidStatus.setStyle("color", 0x00FF00);
 			}
 			
 			private function onDetach(evt:PhidgetEvent):void{
 				trace("onDetach: "+evt);
+				rfidStatus.text = "RFID Card: detached";
+				rfidStatus.setStyle("color", 0xFF0000);
 			}
 			
 			private function onTag(evt:PhidgetDataEvent):void{
@@ -78,26 +89,30 @@
 					else {
 						//we are in answer question mode
 						sequencequestion.stopPlayingSound();
-						sequencequestion.visible = false;
 						//check RFID tag is part of the nextitem
 						if(nextItem.rfids.indexOf(new String(evt.Data)) > -1) {
 							//got it, well done you answered the question properly, you can view the video
-							trace("What a champ!!");
-							vidPlayer.source = "assets/vids/"+nextItem.videoName;
-							vidPlayer.visible = true;
+							sequencequestion.quiz.correctAnswer();
+							correctTimer.start();
 						}
 						else {
 							//too bad, wrong answer, do you want to see the question again???
-							trace("Ain't good enough, try again");
-							//here you define the question transition + question object
-							sequencequestion.question = nextItem.question + "\n\nWRONG!!!! Try something else !!!";
-							sequencequestion.visible = true;
-							
-							//we wait for an answer
-							scanAllowed = true;
+							sequencequestion.quiz.wrongAnswer();
+							wrongTimer.start();
 						}
 					}
 				}
+			}
+			
+			private function correctAnswerHandler(e:TimerEvent):void {
+				sequencequestion.visible = false;
+				vidPlayer.source = "assets/vids/"+nextItem.videoName;
+				vidPlayer.visible = true;
+			}
+			
+			private function wrongAnswerHandler(e:TimerEvent):void {
+				sequencequestion.quiz.reset();
+				scanAllowed = true;
 			}
 			
 			private function getNextItem(name:String = null):Item {
@@ -142,6 +157,7 @@
 					sequencequestion.sound = nextItem.sound;
 					sequencequestion.picture = nextItem.picture;
 					sequencequestion.visible = true;
+					sequencequestion.initIt();
 					
 					//we wait for an answer
 					scanAllowed = true;
@@ -158,13 +174,13 @@
 	</fx:Script>
 	
 	<!-- this is the main display window -->
-	<!-- <s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" /> -->
+	<s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" />
 	<!-- You can use this player for development/debugging purposes as it allows to skip to the end -->
-	<s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/>
+	<!-- <s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/> -->
 	
 	<local:SequenceQuestion visible="false" width="100%" height="100%" id="sequencequestion" />
 	
 	<!-- these are additional UI components such as the waiter, the transition, etc -->
 	<local:Waiter id="waiterMov" width="200" height="200" horizontalCenter="0" verticalCenter="0" visible="false" />
-	
+	<s:Label color="#FFFFFF" bottom="0" left="0" id="rfidStatus" />
 </s:NavigatorContent>

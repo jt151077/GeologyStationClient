@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					   xmlns:s="library://ns.adobe.com/flex/spark" 
-					   xmlns:mx="library://ns.adobe.com/flex/mx" showStatusBar="false" closing="windowedapplication1_closingHandler(event)" applicationComplete="windowedapplica  tion1_applicationCompleteHandler(event)" xmlns:local="*">
+					   xmlns:mx="library://ns.adobe.com/flex/mx" showStatusBar="false" closing="windowedapplication1_closingHandler(event)" applicationComplete="windowedapplication1_applicationCompleteHandler(event)" xmlns:local="*">
 	
 	<fx:Script source="GeologyStationClientScript.as" />
 	

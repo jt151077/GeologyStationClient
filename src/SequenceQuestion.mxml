@@ -38,11 +38,10 @@
 			
 			private function startQ(e:Event):void {
 				var snd:Sound = new Sound();
-				var myChannel:SoundChannel = new SoundChannel();
 				snd.load(new URLRequest("assets/snds/"+sound));
 				
 				var image:Bitmap = Bitmap(e.target.content);
-				quiz = new QuizMode(image, question, myChannel);		
+				quiz = new QuizMode(image, question, snd);		
 				container.addChild(quiz);
 			}
 		]]>

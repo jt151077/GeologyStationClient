@@ -169,7 +169,7 @@ private function retrieveLastChosenStation():void {
 
 //something wrong happened when retrieving the allstations URL. If available, automatically revert and reload previous path
 protected function fetchConfigs_faultHandler(event:FaultEvent):void {
-	iWaiter.visible = false;
+	//iWaiter.visible = false;
 	
 	Alert.show("Error while retrieving the configurations", "FetchConfigs service error");
 	
@@ -208,7 +208,7 @@ protected function fetchConfigs_resultHandler(event:ResultEvent):void {
 private function parseLocalConfiguration():void {
 	monitor.stop();
 	monitor.removeEventListener(StatusEvent.STATUS, handleMonitorStatus);
-	iWaiter.visible = false;
+	//iWaiter.visible = false;
 	
 	//retieve local XML
 	if(pathManager.getLocalConfig() != null) {

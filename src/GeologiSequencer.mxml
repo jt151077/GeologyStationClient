@@ -11,6 +11,9 @@
 			import com.phidgets.events.PhidgetEvent;
 			
 			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
 			import mx.utils.ObjectUtil;
 			
 			import org.osmf.events.TimeEvent;
@@ -19,6 +22,8 @@
 			private var localRFIDArray:ArrayCollection;
 			private var firstDetection:Boolean;
 			private var scanAllowed:Boolean;
+			private var initArraySize:Number;
+			private var counterItem:Number = 0;
 			
 			public var rfid:PhidgetRFID;
 			private var nextItem:Item;
@@ -51,6 +56,8 @@
 					localRFIDArray.addItem(it);
 				}
 				
+				initArraySize = localRFIDArray.length;
+				
 				waiterMov.visible = true;
 				//localRFIDArray = ObjectUtil.copy(_sequenceArray) as ArrayCollection;
 			}
@@ -59,18 +66,42 @@
 				trace("onError: "+evt);
 				rfidStatus.text = "RFID Card: error";
 				rfidStatus.setStyle("color", 0xFF0000);
+				applicationWillClose();
 			}
 			
 			private function onAttach(evt:PhidgetEvent):void {
 				trace("onAttach: "+evt);
-				rfidStatus.text = "RFID Card: connected";
-				rfidStatus.setStyle("color", 0x00FF00);
+				
+				if(rfid.LED) {
+					rfidStatus.text = "RFID Card: connected";
+					rfidStatus.setStyle("color", 0x00FF00);
+				}
+				else {
+					rfidStatus.text = "RFID Card: not connected";
+					rfidStatus.setStyle("color", 0xFF0000);	
+					applicationWillClose();
+				}
+			}
+			
+			private function applicationWillClose():void {
+				Alert.show("The RFID card has not been initialised.\nThis application will now close.\nPlease initialise the reader.", "Application startup error", Alert.OK, null, closeIt, null, 2);
+			}
+			
+			/** 
+			 * Function to handle click on OK on close dialog
+			 *
+			 * @param event. Passed CloseEvent
+			 * 
+			 */
+			private function closeIt(e:CloseEvent):void {
+				FlexGlobals.topLevelApplication.exit();
 			}
 			
 			private function onDetach(evt:PhidgetEvent):void{
 				trace("onDetach: "+evt);
 				rfidStatus.text = "RFID Card: detached";
 				rfidStatus.setStyle("color", 0xFF0000);
+				applicationWillClose();
 			}
 			
 			private function onTag(evt:PhidgetDataEvent):void{
@@ -156,6 +187,8 @@
 					sequencequestion.question = nextItem.question;
 					sequencequestion.sound = nextItem.sound;
 					sequencequestion.picture = nextItem.picture;
+					//TODO: update question number if no RFDI start is chosen
+					sequencequestion.questNumber = new String(initArraySize - localRFIDArray.length);
 					sequencequestion.visible = true;
 					sequencequestion.initIt();
 					
@@ -173,14 +206,17 @@
 		]]>
 	</fx:Script>
 	
+	<local:GeoBackground width="100%" height="100%" horizontalCenter="0" verticalCenter="0"/>
 	<!-- this is the main display window -->
-	<!-- <s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" /> -->
+	<s:VideoDisplay id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)" />
 	<!-- You can use this player for development/debugging purposes as it allows to skip to the end -->
-	<s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/> 
+	<!-- <s:VideoPlayer id="vidPlayer" width="100%" height="100%" autoPlay="true" visible="false" complete="vidPlayer_completeHandler(event)"/> -->
 	
 	<local:SequenceQuestion visible="false" width="100%" height="100%" id="sequencequestion" />
 	
 	<!-- these are additional UI components such as the waiter, the transition, etc -->
 	<local:Waiter id="waiterMov" width="200" height="200" horizontalCenter="0" verticalCenter="0" visible="false" />
-	<s:Label color="#FFFFFF" bottom="0" left="0" id="rfidStatus" />
+	<!-- <local:IdleMode id="waiterMov" width="100%" height="100%" visible="false" /> -->
+	
+	<s:Label color="#FFFFFF" bottom="0" left="0" id="rfidStatus" alpha="1"/>
 </s:NavigatorContent>

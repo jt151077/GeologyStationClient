@@ -9,6 +9,7 @@
 			[Bindable] public var question:String;
 			[Bindable] public var picture:String;
 			[Bindable] public var sound:String;
+			[Bindable] public var questNumber:String;
 			
 			private var loader:Loader;
 			public var quiz:QuizMode = null;
@@ -41,7 +42,7 @@
 				snd.load(new URLRequest("assets/snds/"+sound));
 				
 				var image:Bitmap = Bitmap(e.target.content);
-				quiz = new QuizMode(image, question, snd);		
+				quiz = new QuizMode(image, question, snd, questNumber);		
 				container.addChild(quiz);
 			}
 		]]>

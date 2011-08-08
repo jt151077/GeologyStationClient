@@ -27,7 +27,7 @@
 		</s:Transition>
 	</s:transitions>
 	
-	<local:GeologiSequencer id="geologisequencer" width="100%" height="100%" backgroundColor="#333333" showEffect="{fadeIn}" hideEffect="{fadeAway}" excludeFrom="configuration"/>
+	<local:GeologiSequencer id="geologisequencer" width="100%" height="100%" showEffect="{fadeIn}" hideEffect="{fadeAway}" excludeFrom="configuration"/>
 	<s:NavigatorContent width="100%" height="100%" backgroundColor="#666666" showEffect="{fadeIn}" hideEffect="{fadeAway}" includeIn="configuration">
 		<s:VGroup top="30" bottom="30" left="50" right="50" gap="15">
 			<s:Label color="#FFFFFF" text="URL to GeologyStationConfigurator web server:" />
@@ -48,7 +48,8 @@
 		</s:VGroup>
 	</s:NavigatorContent>
 
-	<local:introWaiter id="iWaiter" width="100%" height="100%" hideEffect="{fadeAway}" effectEnd="{iWaiter.spinner.gotoAndStop(0)}"/>
+	<!-- <local:introWaiter id="iWaiter" width="100%" height="100%" hideEffect="{fadeAway}" effectEnd="{iWaiter.spinner.gotoAndStop(0)}"/> -->
+	
 	<s:Group right="0" top="0" click="group1_clickHandler(event)">
 		<s:Rect width="100" height="100">
 			<s:fill>
@@ -56,6 +57,6 @@
 			</s:fill>
 		</s:Rect>
 	</s:Group>
-	<s:Label color="#FFFFFF" bottom="0" right="0" id="connectStatus" />
+	<s:Label color="#FFFFFF" bottom="0" right="0" id="connectStatus" alpha="0"/>
 </s:WindowedApplication>
 

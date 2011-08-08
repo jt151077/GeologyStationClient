@@ -1,8 +1,9 @@
 package  {
-	import flash.text.AntiAliasType;	
-	import flash.text.TextFieldAutoSize;	
-	import flash.text.TextFormat;	
-	import flash.text.TextField;	
+	import flash.text.AntiAliasType;
+	import flash.text.TextField;
+	import flash.text.TextFieldAutoSize;
+	import flash.text.TextFormat;
+	import flash.text.TextFormatAlign;
 
 	public class TField extends TextField {
 		
@@ -32,6 +33,7 @@ package  {
 		
 		public function set content(textContent:String):void {
 			this.text = textContent;
+			tForm.align = TextFormatAlign.CENTER;
 			this.setTextFormat(tForm);
 		}
 		

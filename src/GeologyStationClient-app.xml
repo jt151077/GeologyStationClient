@@ -3,7 +3,7 @@
 	<id>no.uio.intermedia.GeologyStationClient</id>
 	<filename>GeologyStationClient</filename>
 	<name>GeologyStationClient</name>
-	<versionNumber>0.0.5</versionNumber>
+	<versionNumber>1.0.6</versionNumber>
 	<initialWindow>
 		<content>[This value will be overwritten by Flash Builder in the output app.xml]</content>
 		<systemChrome>standard</systemChrome>
